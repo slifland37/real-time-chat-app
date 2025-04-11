@@ -1,13 +1,16 @@
-const WebSocketClient = (setMessages) => {
-    const ws = new WebSocket("ws://localhost:8000/ws/123");
-  
-    ws.onmessage = (event) => {
-      setMessages((prev) => [...prev, event.data]);
-    };
-  
-    return {
-      sendMessage: (message) => ws.send(message),
-    };
+const WebSocketClient = (setMessages, clientId) => {
+  const ws = new WebSocket(`ws://localhost:8000/ws/${clientId}`);
+
+  ws.onmessage = (event) => {
+    setMessages((prev) => [...prev, event.data]);
   };
-  
-  export default WebSocketClient;
+
+  return {
+    sendMessage: (message) => ws.send(message),
+    dispose: () => {
+      ws.close();
+    }
+  };
+};
+
+export default WebSocketClient;

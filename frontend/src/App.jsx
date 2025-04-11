@@ -5,13 +5,29 @@ import MessageInput from "./components/MessageInput";
 
 const App = () => {
   const [messages, setMessages] = useState([]);
-  const ws = WebSocketClient(setMessages);
+  const [wsClient, setWsClient] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/client-id")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Client ID: ", data.clientId);
+        const ws = WebSocketClient(setMessages, data.clientId);
+        setWsClient(ws);
+      });
+    // cleanup function to close the WebSocket connection when the component unmounts
+    return () => {
+      if (wsClient) {
+        wsClient.dispose();
+      }
+    }
+  }, []);
 
   return (
     <div>
       <h1>Real-Time Chat</h1>
       <ChatWindow messages={messages} />
-      <MessageInput sendMessage={ws.sendMessage} />
+      {wsClient && <MessageInput sendMessage={wsClient.sendMessage} />}
     </div>
   );
 };
